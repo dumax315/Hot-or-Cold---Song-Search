@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+    <title>Hot or Cold?</title>
+		<link href="./style.css" rel="stylesheet"/>
+		<link rel="apple-touch-icon" sizes="180x180" href="./faviconStuff/apple-touch-icon.png">
+		<link rel="icon" type="image/png" sizes="32x32" href="./faviconStuff/favicon-32x32.png">
+		<link rel="icon" type="image/png" sizes="16x16" href="./faviconStuff/favicon-16x16.png">
+		<link rel="manifest" href="./faviconStuff/site.webmanifest">
+  </head>
+  <body>
+    <div class="title">
+      <img class="logo"src="fire.png" alt="fire">
+      <h1>Hot or Cold? (Songle)</h1>
+      <img class="logo" src="ice.png" alt="ice">
+    </div>
+    <h2 style="margin-top: 0;">an epic song search of top from 2010-2020</h2>
+		
+		<div id="resultsPlaceholder">
+			 <ul class="guesses">
+			  <li class="guessBox"></li>
+			  <li class="guessBox"></li>
+				 
+			  <li class="guessBox"></li>
+				 
+				<audio controls id="audioToHide">
+					<source id="audioHint" src="">
+					Your browser does not support the audio element.
+				</audio>
+				<li class="guessBox"></li>
+			 
+			  <li class="guessBox"></li>
+				 
+			  <li class="guessBox"></li>
+			</ul> 
+		</div>
+		
+		
+		<form id="search-form">
+			<input style="background-color: black; color: ghostwhite;  border-color: ghostwhite;" type="text" id="query" value="" class="form-control" placeholder="Type a Song Name">
+			<input style="background-color: black; color: ghostwhite;  border-color: ghostwhite;" type="submit" id="search" class="btn btn-primary" value="Search">
+    </form>
+			
+<!-- 		<div class="resultsContainer">
+      <h4>We Not Humping - Remix</h4 style="padding-right: 10px;">      <p class="artist">Monaleo</p>
+      <img class="albumArt" src="https://i.scdn.co/image/ab67616d0000b273aa582d4782ea0861cc22eed0"></div>
+    <div class="resultsContainer">
+      <h4>Love Sosa</h4><p class="artist">Chief Keef</p><img class="albumArt" src="https://i.scdn.co/image/ab67616d0000b273a76616abf60ce17491e95891"></div> -->
+<!-- 		<script src="https://sdk.scdn.co/spotify-player.js"></script> -->
+<!-- 		<script src="https://open.spotify.com/embed-podcast/iframe-api/v1" async></script> -->
+		<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+		<script>
+
+		
+let authKey = "BQDZIDsRmUtW55I13pnwI04RxufXHla3FLC9NT27QyAKZdglbbU63SOM90jkMBbOBz4Irux-R_I5FrTFJcGZ28VP4JNHsiD8S6Nenz_jaz4W_VwHOBTegAzO6XSIR5n-yaOWZ3FunWVZVudZG0GtsnKATUsfSwOV6-T1dQ"
+
+
+let songToday = ""
+let guessesThisRound = 0;
+const getHotness = function (value) {
+	if(value >= .95) {
+		return "FIRE🔥🔥🔥"
+	}
+	if(value >= .75) {
+		return "Hotter🔥🔥"
+	}
+	if(value >= .6) {
+		return "Warm🔥"
+	}
+	if(value >= .6) {
+		return "Lukewarm🤷"
+	}
+	if(value >= .45) {
+		return "Lukecold🤷"
+	}
+	if(value >= .3) {
+		return "Cold🧊"
+	}
+	if(value >= .065) {
+		return "Colder🧊🧊"
+	}
+	return "ICE🧊🧊🧊"
+
+}
+			
+const search = async function (query) {
+	try {
+    const response = await axios.get("https://api.spotify.com/v1/search", {
+			params: {
+				"type":"track",
+				"limit":1,
+				"q":query
+			},
+		  headers: {
+				"Content-Type": "application/json",
+				"Authorization": "Bearer " + authKey
+			}
+		})
+		console.log("https://api.spotify.com/v1/audio-features/" + response.data.tracks.items[0].id)
+		try {
+	    const responseExtra = await axios.get("https://api.spotify.com/v1/audio-features/" + response.data.tracks.items[0].id, {
+			  headers: {
+					"Content-Type": "application/json",
+					"Authorization": "Bearer " + authKey
+				}
+			})
+			try {
+		    const responseGenres = await axios.get("https://api.spotify.com/v1/artists/" + response.data.tracks.items[0].artists[0].id, {
+				  headers: {
+						"Content-Type": "application/json",
+						"Authorization": "Bearer " + authKey
+					}
+				})
+				
+				return {main:response.data.tracks.items[0],extra:responseExtra.data,genres:responseGenres.data.genres}
+		  } catch (error) {
+		    console.error(error);
+		  }
+			return {main:response.data.tracks.items[0],extra:responseExtra.data}
+	  } catch (error) {
+	    console.error(error);
+	  }
+		return {main:response.data.tracks.items[0],extra:"responseExtra"}
+  } catch (error) {
+    console.error(error);
+  }
+
+}
+
+var guess = async function (query) {
+	try{
+	if(guessesThisRound == 6){
+		alert("the song was " +songToday.main.name +"\n good luck next time")
+		return;
+	}
+	if(guessesThisRound == 2){
+		let audio = document.createElement("source")
+		audio.src = songToday.main.preview_url;
+		document.getElementById("audioToHide").append(audio);
+		document.getElementById("audioToHide").style.display = "initial";
+	}
+	response = await search(query)
+	console.log(response);
+	const guessDiv = document.createElement("div");
+	// document.createElement("img")
+	guessDiv.classList.add("flexTitle")
+	//album art
+	let albumEll = document.createElement("img")
+	albumEll.src = response.main.album.images[0].url;
+	guessDiv.appendChild(albumEll)
+	//title
+	let titleEll = document.createElement("p")
+	titleEll.innerText = response.main.name + "\nBy:" + response.main.artists[0].name;
+	guessDiv.appendChild(titleEll)
+	//datatable
+	const compareTable = document.createElement("table");
+	let compareTableHead = document.createElement("tr");
+	compareTableHead.innerHTML = "<th>Artist</th><th>Genras</th><th>Album</th><th>Duration</th><th>Tempo</th><th>Danceability</th>"
+	let compareTableTop = document.createElement("tr");
+	let compareTableBot = document.createElement("tr");
+	//artist
+	let artistEll = document.createElement("td")
+	artistEll.innerText = response.main.artists[0].name.substring(0, 15) +"ℹ️";
+	artistEll.title = response.main.artists.map(function(item) {
+		return item.name;
+	}).join(", ft. ")
+	artistEll.onclick = function() {
+		alert(response.main.artists.map(function(item) {
+		  return item.name;
+		}).join(", ft. "))
+	};
+	compareTableTop.appendChild(artistEll)
+
+	let artistEllOG = document.createElement("td")
+	switch(songToday.main.artists[0].name == response.main.artists[0].name) {
+	  case true:
+	    // code block
+			
+			artistEllOG.innerText = getHotness(1);
+	    break;
+	  case false:
+	    artistEllOG.innerText = getHotness(0);
+	    break;
+	} 
+	compareTableBot.appendChild(artistEllOG)
+	
+	//Genras
+	let Genras = document.createElement("td")
+	Genras.innerText = response.genres.join(", ").substring(0, 15) +"ℹ️";
+	Genras.title = response.genres.join(", ")
+	Genras.onclick = function() {
+		alert(response.genres.join(", "))
+	};
+	compareTableTop.appendChild(Genras)
+
+	let GenrasOG = document.createElement("td")
+	let totleSame = 0;
+	for (let i = 0; i < response.genres.length; i++) {
+	  if(songToday.genres.includes(response.genres[i])){
+			totleSame += 1;
+		}
+	}
+	for (let i = 0; i < songToday.genres.length; i++) {
+	  if(response.genres.includes(songToday.genres[i])){
+			totleSame += 1;
+		}
+	}
+	GenrasOG.innerText = getHotness(totleSame/(response.genres.length+songToday.genres.length));
+	compareTableBot.appendChild(GenrasOG)
+
+	//album
+	Genras = document.createElement("td")
+	Genras.innerText = response.main.album.name.substring(0, 15);
+	Genras.title=response.main.album.name
+	compareTableTop.appendChild(Genras)
+
+	GenrasOG = document.createElement("td")
+	switch(response.main.album.name == songToday.main.album.name) {
+	  case true:
+	    // code block
+			GenrasOG.innerText = getHotness(1);
+	    break;
+	  case false:
+	    GenrasOG.innerText = getHotness(0);
+	    break;
+	} 
+	// GenrasOG.innerText = songToday.main.album.name;
+	compareTableBot.appendChild(GenrasOG)
+
+	//duration_ms
+	Genras = document.createElement("td")
+	Genras.innerText = response.main.duration_ms/1000 + "s";
+	compareTableTop.appendChild(Genras)
+
+	console.log(1-(Math.abs(songToday.main.duration_ms - response.main.duration_ms)/10000))
+	GenrasOG = document.createElement("td")
+	GenrasOG.innerText = getHotness(1-Math.abs(songToday.main.duration_ms - response.main.duration_ms)/10000);
+	compareTableBot.appendChild(GenrasOG)
+
+	//tempo
+	Genras = document.createElement("td")
+	Genras.innerText = response.extra.tempo  + "bmp";
+	compareTableTop.appendChild(Genras)
+
+	GenrasOG = document.createElement("td")
+	console.log(1-Math.abs(songToday.extra.tempo - response.extra.tempo)/100)
+	GenrasOG.innerText = getHotness(1-Math.abs(songToday.extra.tempo - response.extra.tempo)/100);
+	compareTableBot.appendChild(GenrasOG)
+	
+	//danceability
+	Genras = document.createElement("td")
+	Genras.innerText = response.extra.danceability;
+	compareTableTop.appendChild(Genras)
+
+	GenrasOG = document.createElement("td")
+	console.log((1-(Math.abs(songToday.extra.danceability - response.extra.danceability))))
+	GenrasOG.innerText = getHotness((1-(Math.abs(songToday.extra.danceability - response.extra.danceability))));
+	compareTableBot.appendChild(GenrasOG)
+	
+
+	compareTable.appendChild(compareTableHead)
+	compareTable.appendChild(compareTableTop)
+	compareTable.appendChild(compareTableBot)
+
+
+	if (songToday.main.id == response.main.id){
+		alert("You Win")
+	}
+	document.getElementsByClassName("guessBox")[guessesThisRound].appendChild(guessDiv);
+	document.getElementsByClassName("guessBox")[guessesThisRound].appendChild(compareTable);
+	guessesThisRound += 1;
+	}
+	catch (error) {
+  	console.error(error);
+		alert("try again")
+	}
+};
+
+const getSongToday = async function (){
+	try {
+		const responseRef = await axios.get("https://hot-or-cold-song-search.theohal.repl.co/refresh_token")
+		console.log(responseRef.data);
+		authKey = responseRef.data.access_token
+		
+    const response = await axios.get("https://hot-or-cold-song-search.theohal.repl.co/currentSong")
+		console.log(response.data);
+		songToday = await search(response.data)
+
+		console.log(songToday)
+	} catch (error) {
+    console.error(error);
+  }
+}
+
+getSongToday()
+// var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+// var source = audioCtx.createBufferSource();
+// var dest = audioCtx.createMediaStreamDestination();
+// var mediaRecorder = new MediaRecorder(dest.stream);
+
+// var request = new XMLHttpRequest();
+// request.open('GET', 'https://p.scdn.co/mp3-preview/3196afed0e89dcef43923ede55e0587d5542c9ab?cid=c23ffbef2e5d495da1aaa3e8e675998d', true);
+// request.responseType = 'arraybuffer';
+
+// request.onload = function() {
+//   var audioData = request.response;
+//   audioCtx.decodeAudioData(
+//     audioData,
+//     function(buffer) {
+//       source.buffer = buffer;
+//       source.connect(dest);
+//       mediaRecorder.start();
+//       source.start(audioCtx.currentTime, 3);
+//       // etc...
+//     },
+//     function(e){ 
+//       console.log("Error with decoding audio data" + e.err);
+//     }
+//   );
+
+// }
+
+// request.send();
+
+document.getElementById('search-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    guess(document.getElementById('query').value);
+}, false);
+			
+		</script>
+  </body>
+</html>

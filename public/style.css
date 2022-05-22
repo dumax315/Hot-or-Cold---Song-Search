@@ -1,0 +1,79 @@
+* {
+  color: ghostwhite;
+  text-align: center;
+}
+
+html, body {
+  height: 100%;
+  width: 100%;
+}
+
+body {
+  background-color: black;
+}
+
+.title {
+  display: flex;
+  justify-content: space-evenly;
+  font-size: 24px;
+}
+
+.logo {
+  width: 64px;
+  height: 64px;
+  margin-top: 10px;
+}
+
+
+.resultsContainer {
+  display: flex;
+  justify-content: center;
+  margin-top: 16px;
+}
+
+h4 {
+  padding-right: 24px;
+  margin-top: 10px;
+}
+
+.artist {
+  margin-top: 10px;
+}
+img {
+  width: 64px;
+  height: 64px;
+  margin: 16px;
+}
+
+ul {
+	list-style:none;
+	width: 60%;
+	margin:auto;
+	margin-top:1em;
+}
+
+li {
+	margin-bottom:.5em;
+	min-height:2em;
+	border: 3px solid lightgreen;
+}
+
+.flexTitle {
+	display:flex;
+}
+
+table, th, td {
+  border: 1px solid lightgreen;
+}
+
+table {
+	width:100%;
+  border-collapse: collapse;
+}
+p {
+	text-align: left;
+}
+
+#audioToHide {
+	display:none;
+}
